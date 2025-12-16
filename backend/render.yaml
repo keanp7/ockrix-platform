@@ -1,0 +1,18 @@
+# Render Blueprint for OCKRIX Backend
+# Deploy to Render: https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: ockrix-backend
+    runtime: node
+    plan: starter # Change to professional/standard for production
+    region: oregon # Change to your preferred region
+    buildCommand: npm install && npm run build || npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000 # Render automatically assigns PORT
+      # Add other environment variables in Render dashboard
