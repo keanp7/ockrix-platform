@@ -1,0 +1,130 @@
+{
+  "common": {
+    "appName": "OCKRIX",
+    "tagline": "Recover Account Access. Securely.",
+    "subtitle": "AI-powered, zero-knowledge recovery for people with multiple accounts.",
+    "getStarted": "Get Started",
+    "learnMore": "Learn More",
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "dashboard": "Dashboard",
+    "pricing": "Pricing",
+    "faq": "FAQ",
+    "security": "Security",
+    "contact": "Contact"
+  },
+  "hero": {
+    "title": "Recover Account Access. Securely.",
+    "subtitle": "AI-powered, zero-knowledge recovery for people with multiple accounts.",
+    "cta": "Start Recovery",
+    "trusted": "Trusted by thousands worldwide"
+  },
+  "features": {
+    "zeroKnowledge": {
+      "title": "Zero-Knowledge Recovery",
+      "description": "We never store or see your passwords. Complete privacy."
+    },
+    "aiPowered": {
+      "title": "AI-Powered Assistance",
+      "description": "Smart recovery guidance that adapts to your needs."
+    },
+    "multiAccount": {
+      "title": "Multi-Account Vault",
+      "description": "Manage all your accounts in one secure place."
+    },
+    "global": {
+      "title": "Global Support",
+      "description": "10+ languages, worldwide recovery support."
+    }
+  },
+  "pricing": {
+    "title": "Simple, Transparent Pricing",
+    "free": {
+      "name": "Free",
+      "price": "$0",
+      "period": "forever",
+      "description": "Try & trust only",
+      "features": [
+        "1-2 total account recoveries (LIFETIME)",
+        "Email recovery only",
+        "No AI assistance",
+        "No support",
+        "No recovery history",
+        "No multi-account vault",
+        "OCKRIX branding"
+      ],
+      "cta": "Get Started"
+    },
+    "basic": {
+      "name": "Basic",
+      "price": "$19.99",
+      "period": "/month",
+      "description": "Most Popular",
+      "badge": "Most Popular",
+      "features": [
+        "Up to 20 recoveries/month",
+        "Email + Phone recovery",
+        "Multi-account vault (up to 15 accounts)",
+        "AI-guided recovery (text only)",
+        "Recovery history (30 days)",
+        "Standard email support",
+        "10+ languages"
+      ],
+      "cta": "Start Free Trial"
+    },
+    "pro": {
+      "name": "Pro",
+      "price": "$39.99",
+      "period": "/month",
+      "description": "Unlimited recoveries",
+      "features": [
+        "Unlimited recoveries",
+        "Email + Phone + AI Voice recovery",
+        "Unlimited account vault",
+        "Full recovery audit logs",
+        "Faster processing priority",
+        "Advanced AI assistance",
+        "Priority support",
+        "Export reports (PDF)"
+      ],
+      "cta": "Start Free Trial"
+    },
+    "business": {
+      "name": "Business",
+      "price": "Custom",
+      "period": "",
+      "description": "Enterprise features",
+      "features": [
+        "Team accounts",
+        "Admin dashboard",
+        "SSO",
+        "Compliance & audit logs",
+        "API access",
+        "SLA & dedicated support"
+      ],
+      "cta": "Contact Sales"
+    }
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "questions": {
+      "passwordStorage": {
+        "q": "Does OCKRIX store my passwords?",
+        "a": "No. OCKRIX uses zero-knowledge recovery. We never store or see passwords."
+      },
+      "safer": {
+        "q": "Why is this safer than normal password resets?",
+        "a": "Single-use cryptographic tokens, short expiry, no stored secrets."
+      },
+      "multipleAccounts": {
+        "q": "Can I manage multiple accounts?",
+        "a": "Yes, paid plans unlock the account vault feature."
+      },
+      "global": {
+        "q": "Is OCKRIX global?",
+        "a": "Yes, 10+ languages and international recovery support."
+      }
+    }
+  }
+}
+

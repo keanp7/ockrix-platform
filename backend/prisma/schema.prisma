@@ -1,0 +1,241 @@
+// Prisma Schema for OCKRIX Platform
+// PostgreSQL Database with Prisma ORM
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model - Authentication and profile
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  emailVerified DateTime?
+  passwordHash  String    // For JWT auth
+  name          String?
+  phone         String?
+  phoneVerified DateTime?
+  language      String    @default("en")
+  timezone      String    @default("UTC")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  subscription  Subscription?
+  accounts      Account[]
+  recoveries    Recovery[]
+  auditLogs     AuditLog[]
+  sessions      Session[]
+
+  @@index([email])
+  @@index([phone])
+  @@map("users")
+}
+
+// Subscription model - Stripe subscriptions
+model Subscription {
+  id                    String    @id @default(uuid())
+  userId                String    @unique
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Stripe fields
+  stripeCustomerId      String    @unique
+  stripeSubscriptionId  String?   @unique
+  stripePriceId         String?
+  stripeStatus          String    // active, canceled, past_due, trialing, etc.
+  
+  // Plan details
+  planId                String    @default("FREE")
+  planName              String    @default("Free")
+  status                String    @default("active") // active, canceled, past_due
+  
+  // Billing
+  currentPeriodStart    DateTime?
+  currentPeriodEnd      DateTime?
+  cancelAtPeriodEnd     Boolean   @default(false)
+  canceledAt            DateTime?
+  
+  // Feature limits
+  monthlyRecoveryLimit  Int?      // null = unlimited
+  totalRecoveryLimit    Int?      // For FREE plan (lifetime limit)
+  accountVaultLimit     Int?      // null = unlimited
+  recoveryHistoryDays   Int?      // null = unlimited
+  aiVoiceEnabled        Boolean   @default(false)
+  auditLogsEnabled      Boolean   @default(false)
+  exportReportsEnabled  Boolean   @default(false)
+  prioritySupport       Boolean   @default(false)
+  
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([stripeCustomerId])
+  @@index([stripeSubscriptionId])
+  @@index([planId])
+  @@map("subscriptions")
+}
+
+// Account model - Multi-account vault (accounts users want to recover)
+model Account {
+  id                String    @id @default(uuid())
+  userId            String
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Account details
+  accountName       String    // e.g., "Gmail", "Bank Account"
+  accountType       String    // email, social, financial, etc.
+  identifier        String    // email or phone associated with the account
+  identifierType    String    // email or phone
+  
+  // Metadata
+  notes             String?
+  tags              String[]  @default([])
+  lastRecoveredAt   DateTime?
+  recoveryCount     Int       @default(0)
+  
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([identifier])
+  @@map("accounts")
+}
+
+// Recovery model - Recovery attempts and history
+model Recovery {
+  id                String    @id @default(uuid())
+  userId            String?
+  user              User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  accountId         String?
+  account           Account?
+  
+  // Recovery details
+  identifier        String    // email or phone used
+  identifierType    String    // email or phone
+  method            String    // email, phone, voice
+  
+  // Status
+  status            String    @default("pending") // pending, completed, failed, expired, blocked
+  riskLevel         String?   // LOW, MEDIUM, HIGH
+  riskScore         Int?      // 0-100
+  blocked           Boolean   @default(false)
+  
+  // Session data
+  sessionId         String    @unique
+  tokenHash         String?   // Bcrypt hashed token
+  tokenUsed         Boolean   @default(false)
+  expiresAt         DateTime
+  
+  // Verification
+  verifiedAt        DateTime?
+  completedAt       DateTime?
+  confirmationId    String?
+  
+  // Metadata
+  clientIp          String?
+  userAgent         String?
+  deviceFingerprint String?
+  geolocation       Json?
+  
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([sessionId])
+  @@index([identifier])
+  @@index([status])
+  @@index([createdAt])
+  @@map("recoveries")
+}
+
+// Audit Log model - Recovery audit logs (paid plans)
+model AuditLog {
+  id                String    @id @default(uuid())
+  userId            String?
+  user              User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  recoveryId        String?
+  
+  // Event details
+  eventType         String    // RECOVERY_ATTEMPT, RECOVERY_COMPLETED, etc.
+  severity          String    // INFO, WARN, ERROR, CRITICAL
+  message           String
+  
+  // Context
+  sessionId         String?
+  clientIp          String?
+  userAgent         String?
+  metadata          Json?
+  
+  success           Boolean   @default(true)
+  errorMessage      String?
+  
+  createdAt         DateTime  @default(now())
+
+  @@index([userId])
+  @@index([eventType])
+  @@index([createdAt])
+  @@index([sessionId])
+  @@map("audit_logs")
+}
+
+// Session model - Active user sessions (JWT)
+model Session {
+  id                String    @id @default(uuid())
+  userId            String
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  token             String    @unique
+  refreshToken      String?   @unique
+  expiresAt         DateTime
+  revokedAt         DateTime?
+  
+  // Session metadata
+  ipAddress         String?
+  userAgent         String?
+  deviceInfo        Json?
+  
+  createdAt         DateTime  @default(now())
+
+  @@index([userId])
+  @@index([token])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+// Plan model - Subscription plan definitions
+model Plan {
+  id                    String    @id
+  name                  String
+  description           String?
+  price                 Float     @default(0)
+  currency              String    @default("USD")
+  interval              String    @default("month") // month, year
+  
+  // Features
+  monthlyRecoveryLimit  Int?      // null = unlimited
+  totalRecoveryLimit    Int?      // For FREE (lifetime)
+  accountVaultLimit     Int?      // null = unlimited
+  recoveryHistoryDays   Int?      // null = unlimited
+  aiVoiceEnabled        Boolean   @default(false)
+  auditLogsEnabled      Boolean   @default(false)
+  exportReportsEnabled  Boolean   @default(false)
+  prioritySupport       Boolean   @default(false)
+  languages             String[]  @default(["en"])
+  brandingRemoved       Boolean   @default(false)
+  
+  // Stripe
+  stripePriceId         String?   @unique
+  
+  // Status
+  active                Boolean   @default(true)
+  
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@unique([stripePriceId])
+  @@map("plans")
+}
